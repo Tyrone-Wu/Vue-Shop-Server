@@ -500,4 +500,37 @@ router.post('/api/login_pwd', (req, res) => {
   });
 });
 
+/**
+ * 根据session中的用户ID过去用户信息
+ */
+
+router.get('/api/user_info', (req, res) => {
+  // 获取参数
+  let userId = req.session.userId;
+
+  let sqlStr =
+    'SELECT * FROM myshopdb.pdd_user_info where id = ' + userId + ' limit 1;';
+  conn.query(sqlStr, (err, results) => {
+    if (err) {
+      res.json({ err_code: 0, message: '请求数据失败' });
+    } else {
+      results = JSON.parse(JSON.stringify(results));
+      if (!results[0]) {
+        // 用户不存在
+        delete req.session.userId;
+        res.json({ err_code: 1, message: '请先登录！' });
+      } else {
+        res.json({
+          success_code: 200,
+          message: {
+            id: results[0].id,
+            user_name: results[0].user_name,
+            user_phone: results[0].user_phone,
+          },
+        });
+      }
+    }
+  });
+});
+
 module.exports = router;
